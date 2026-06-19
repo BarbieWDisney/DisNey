@@ -437,4 +437,113 @@ function cancelEdit(productId) {
     if (editRow) editRow.style.display = 'none';
 }
 
-// ===== تحديث
+// ===== تحديث المنتج =====
+async function updateProduct(productId) {
+    // التحقق من تسجيل الدخول
+    if (!isLoggedIn) {
+        alert('⚠️ الرجاء تسجيل الدخول أولاً');
+        return;
+    }
+    
+    const nameInput = document.getElementById(`edit-name-${productId}`);
+    const priceInput = document.getElementById(`edit-price-${productId}`);
+    const stockInput = document.getElementById(`edit-stock-${productId}`);
+    const categoryInput = document.getElementById(`edit-category-${productId}`);
+    const descInput = document.getElementById(`edit-desc-${productId}`);
+    const fileInput = document.getElementById(`edit-image-${productId}`);
+    
+    if (!nameInput || !priceInput || !stockInput || !categoryInput || !descInput) {
+        alert('⚠️ حدث خطأ في النموذج');
+        return;
+    }
+    
+    const name = nameInput.value.trim();
+    const price = parseFloat(priceInput.value);
+    const stock = parseInt(stockInput.value);
+    const category = categoryInput.value;
+    const description = descInput.value.trim();
+    const file = fileInput ? fileInput.files[0] : null;
+    
+    // التحقق من المدخلات
+    if (!name) {
+        alert('⚠️ الرجاء إدخال اسم المنتج');
+        nameInput.focus();
+        return;
+    }
+    
+    if (isNaN(price) || price <= 0) {
+        alert('⚠️ الرجاء إدخال سعر صحيح');
+        priceInput.focus();
+        return;
+    }
+    
+    if (isNaN(stock) || stock < 0) {
+        alert('⚠️ الرجاء إدخال كمية صحيحة');
+        stockInput.focus();
+        return;
+    }
+    
+    if (!description) {
+        alert('⚠️ الرجاء إدخال شرح للمنتج');
+        descInput.focus();
+        return;
+    }
+    
+    try {
+        // تحديث البيانات الأساسية
+        const updateData = {
+            name: name,
+            price: price,
+            stock: stock,
+            category: category,
+            description: description
+        };
+        
+        // إذا تم اختيار صورة جديدة
+        if (file) {
+            // التحقق من حجم الصورة
+            if (file.size > 5 * 1024 * 1024) {
+                alert('⚠️ حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت');
+                fileInput.value = '';
+                return;
+            }
+            
+            const fileName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+            const storageRef = storage.ref('products/' + fileName);
+            const snapshot = await storageRef.put(file);
+            const imageUrl = await snapshot.ref.getDownloadURL();
+            updateData.imageUrl = imageUrl;
+        }
+        
+        await db.collection('products').doc(productId).update(updateData);
+        
+        alert('✅ تم تحديث المنتج بنجاح!');
+        cancelEdit(productId);
+        loadProductsForAdmin();
+    } catch (error) {
+        console.error('❌ خطأ في التحديث:', error);
+        alert('❌ حدث خطأ: ' + error.message);
+    }
+}
+
+// ===== حذف المنتج =====
+async function deleteProduct(productId) {
+    // التحقق من تسجيل الدخول
+    if (!isLoggedIn) {
+        alert('⚠️ الرجاء تسجيل الدخول أولاً');
+        return;
+    }
+    
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا المنتج؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+        return;
+    }
+    
+    try {
+        await db.collection('products').doc(productId).delete();
+        alert('✅ تم حذف المنتج بنجاح!');
+        loadProductsForAdmin();
+    } catch (error) {
+        console.error('❌ خطأ في الحذف:', error);
+        alert('❌ حدث خطأ: ' + error.message);
+    }
+}
