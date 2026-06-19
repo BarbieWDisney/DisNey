@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dis Ney - عالم الدمى والألعاب الأصلية</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <!-- ===== الهيدر ===== -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">🧸</span>
+                <span class="logo-text">Dis Ney</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">الرئيسية</a></li>
+                    <li><a href="#products">المنتجات</a></li>
+                    <li><a href="#about">من نحن</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <a href="admin.html" class="admin-link">🔐 لوحة التحكم</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== البانر ===== -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>🌟 مرحباً بك في عالم Dis Ney</h1>
+            <p>اكتشف مجموعتنا الفريدة من الدمى الأصلية والأعمال اليدوية</p>
+            <a href="#products" class="btn-primary">استكشف المنتجات</a>
+        </div>
+    </section>
+
+    <!-- ===== التصفية ===== -->
+    <section class="filter-section">
+        <div class="container">
+            <h2>📂 تصفح المنتجات</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">📦 الكل</button>
+                <button class="filter-btn" data-filter="دمى أصلية">🧸 دمى أصلية</button>
+                <button class="filter-btn" data-filter="أعمال يدوية">🎨 أعمال يدوية</button>
+                <button class="filter-btn" data-filter="ألعاب">🎮 ألعاب</button>
+                <button class="filter-btn" data-filter="هدايا">🎁 هدايا</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== المنتجات ===== -->
+    <section class="products-section" id="products">
+        <div class="container">
+            <h2 class="section-title">🛍️ جميع المنتجات</h2>
+            <div class="products-grid" id="productsContainer">
+                <div class="loading">⏳ جاري تحميل المنتجات...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== الفوتر ===== -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🧸 Dis Ney</h3>
+                    <p>متجر متخصص في الدمى الأصلية والأعمال اليدوية الفريدة</p>
+                </div>
+                <div class="footer-section">
+                    <h4>روابط سريعة</h4>
+                    <ul>
+                        <li><a href="#home">الرئيسية</a></li>
+                        <li><a href="#products">المنتجات</a></li>
+                        <li><a href="admin.html">لوحة التحكم</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>تواصل معنا</h4>
+                    <p>📧 info@disney-store.com</p>
+                    <p>📱 +20 123 456 789</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Dis Ney. جميع الحقوق محفوظة</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== JavaScript ===== -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
