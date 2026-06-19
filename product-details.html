@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المنتج - Dis Ney</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <style>
+        /* ===== تنسيقات صفحة التفاصيل ===== */
+        .product-detail-section {
+            padding: 60px 0;
+            min-height: 70vh;
+        }
+        
+        .product-detail-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.08);
+        }
+        
+        .product-detail-image {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 15px;
+            background: #f0ebe5;
+        }
+        
+        .product-detail-name {
+            font-size: 32px;
+            color: #2c1810;
+            margin-bottom: 10px;
+        }
+        
+        .product-detail-category {
+            display: inline-block;
+            background: #f0ebe5;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #4a2c1a;
+            margin-bottom: 15px;
+        }
+        
+        .product-detail-price {
+            font-size: 32px;
+            color: #c0392b;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .product-detail-price::after {
+            content: ' ج.م';
+        }
+        
+        .product-detail-description {
+            font-size: 18px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #faf8f6;
+            border-radius: 10px;
+            border-right: 4px solid #f5d742;
+        }
+        
+        .product-detail-stock {
+            font-size: 18px;
+            margin-bottom: 25px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .product-detail-stock.in-stock {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .product-detail-stock.out-of-stock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn-order {
+            background: #f5d742;
+            color: #2c1810;
+            padding: 15px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-order:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(245, 215, 66, 0.4);
+        }
+        
+        .btn-back {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #2c1810;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .btn-back:hover {
+            color: #4a2c1a;
+            text-decoration: underline;
+        }
+        
+        .loading-detail {
+            text-align: center;
+            padding: 80px 0;
+            font-size: 24px;
+            color: #999;
+        }
+        
+        .error-detail {
+            text-align: center;
+            padding: 80px 0;
+            font-size: 20px;
+            color: #c0392b;
+        }
+        
+        /* ===== تجاوب ===== */
+        @media (max-width: 768px) {
+            .product-detail-container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .product-detail-image {
+                height: 300px;
+            }
+            
+            .product-detail-name {
+                font-size: 24px;
+            }
+            
+            .product-detail-price {
+                font-size: 26px;
+            }
+            
+            .product-detail-description {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== الهيدر ===== -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">🧸</span>
+                <span class="logo-text">Dis Ney</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">🏠 الرئيسية</a></li>
+                    <li><a href="index.html#products">📦 المنتجات</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== تفاصيل المنتج ===== -->
+    <section class="product-detail-section">
+        <div class="container">
+            <a href="index.html#products" class="btn-back">← العودة إلى المنتجات</a>
+            <div id="productDetailContainer">
+                <div class="loading-detail">⏳ جاري تحميل المنتج...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== JavaScript ===== -->
+    <script src="js/firebase-config.js"></script>
+    <script>
+        // ===== الحصول على معرف المنتج من الرابط =====
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        // ===== تحميل تفاصيل المنتج =====
+        function loadProductDetails() {
+            const container = document.getElementById('productDetailContainer');
+
+            if (!productId) {
+                container.innerHTML = `
+                    <div class="error-detail">
+                        ❌ لم يتم تحديد المنتج
+                        <br>
+                        <a href="index.html#products" style="color: #2c1810; text-decoration: underline;">← العودة للمنتجات</a>
+                    </div>
+                `;
+                return;
+            }
+
+            db.collection('products').doc(productId).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const product = doc.data();
+                        
+                        // تحديد حالة المخزون
+                        const stockClass = product.stock > 0 ? 'in-stock' : 'out-of-stock';
+                        const stockText = product.stock > 0 ? `✅ متوفر (${product.stock} قطعة)` : '❌ غير متوفر';
+
+                        container.innerHTML = `
+                            <div class="product-detail-container">
+                                <div>
+                                    <img src="${product.imageUrl}" alt="${product.name}" class="product-detail-image"
+                                         onerror="this.src='https://via.placeholder.com/500x500/2c1810/ffffff?text=Dis+Ney'">
+                                </div>
+                                <div>
+                                    <h1 class="product-detail-name">${product.name}</h1>
+                                    <div class="product-detail-category">${product.category || 'منتج'}</div>
+                                    <div class="product-detail-price">${product.price}</div>
+                                    <div class="product-detail-stock ${stockClass}">${stockText}</div>
+                                    <p class="product-detail-description">${product.description || 'لا يوجد شرح للمنتج'}</p>
+                                    <button class="btn-order" onclick="orderProduct('${product.name}', '${product.price}')">
+                                        🛒 اطلب الآن
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <div class="error-detail">
+                                ❌ المنتج غير موجود
+                                <br>
+                                <a href="index.html#products" style="color: #2c1810; text-decoration: underline;">← العودة للمنتجات</a>
+                            </div>
+                        `;
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ خطأ في تحميل المنتج:', error);
+                    container.innerHTML = `
+                        <div class="error-detail">
+                            ⚠️ حدث خطأ في تحميل المنتج
+                            <br>
+                            <span style="font-size: 14px; color: #999;">${error.message}</span>
+                            <br><br>
+                            <a href="index.html#products" style="color: #2c1810; text-decoration: underline;">← العودة للمنتجات</a>
+                        </div>
+                    `;
+                });
+        }
+
+        // ===== طلب المنتج عبر واتساب =====
+        function orderProduct(name, price) {
+            const message = `🛍️ طلب منتج من Dis Ney\n\n🧸 المنتج: ${name}\n💰 السعر: ${price} ج.م\n\nالرجاء التواصل معي للتأكيد.`;
+            const phone = '20123456789'; // غيّر رقم الهاتف هنا
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        // ===== تحميل التفاصيل عند فتح الصفحة =====
+        document.addEventListener('DOMContentLoaded', loadProductDetails);
+    </script>
+</body>
+</html>
